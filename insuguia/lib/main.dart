@@ -4,46 +4,73 @@ import 'tela_registro_insulina.dart';
 import 'tela_historico.dart';
 
 void main() {
-  runApp(InsuGuiaApp());
+  runApp(const InsuGuiaApp());
 }
 
 class InsuGuiaApp extends StatelessWidget {
+  const InsuGuiaApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'InsuGuia',
-      theme: ThemeData(primarySwatch: Colors.blue),
-      home: TelaPrincipal(),
+      title: 'InsuGuia Mobile',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        scaffoldBackgroundColor: Colors.blue[50],
+      ),
+      home: const TelaPrincipal(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
 
 class TelaPrincipal extends StatelessWidget {
+  const TelaPrincipal({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('InsuGuia')),
-      body: Center(
+      appBar: AppBar(
+        title: const Text('InsuGuia Mobile'),
+        centerTitle: true,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(24.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => TelaCadastro()));
-              },
-              child: Text('Cadastro de Usuário'),
+            const Text(
+              'Aplicativo acadêmico para apoio à prescrição de insulina '
+              'em pacientes hospitalares (cenário não crítico).',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 16),
             ),
-            ElevatedButton(
+            const SizedBox(height: 30),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.person_add),
+              label: const Text('Cadastro de Paciente'),
               onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => TelaRegistroInsulina()));
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => const TelaCadastro()));
               },
-              child: Text('Registrar Dose de Insulina'),
             ),
-            ElevatedButton(
+            const SizedBox(height: 10),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.medication),
+              label: const Text('Registrar Dose de Insulina'),
               onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => TelaHistorico()));
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => const TelaRegistroInsulina()));
               },
-              child: Text('Histórico de Aplicações'),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.history),
+              label: const Text('Histórico de Aplicações'),
+              onPressed: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => const TelaHistorico()));
+              },
             ),
           ],
         ),

@@ -49,7 +49,7 @@ Desenvolver um **protótipo funcional** que sirva como registro de prescrição 
     ![Tela Principal](assets/screenshots/tela_principal.png)
 
 - Tela de Cadastro
-    ![Tela de Cadastro](assets/screenshots/tela_principal.png)
+    ![Tela de Cadastro](assets/screenshots/tela_cadastro.png)
 
 - Tela de Registro
     ![Tela de Registro](assets/screenshots/tela_registro.png)

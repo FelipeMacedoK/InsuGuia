@@ -45,15 +45,25 @@ Desenvolver um **protótipo funcional** que sirva como registro de prescrição 
 
 ## 🖼️ Prints das Telas 
 
-- Em Desenvolvimento 
+- Tela Principal  
+    ![Tela Principal](assets/screenshots/tela_principal.png)
+
+- Tela de Cadastro
+    ![Tela de Cadastro](assets/screenshots/tela_principal.png)
+
+- Tela de Registro
+    ![Tela de Registro](assets/screenshots/tela_registro.png)
+
+- Tela de Histórico
+    ![Tela de Histórico](assets/screenshots/tela_historico.png)
 
 ---
 
 ## 📍 Equipe
-**Acadêmico:** Felipe Macedo e Guilherme Stein
-**Orientação:** Prof. Sandro Alencar Fernandes
-**Disciplina:** Desenvolvimento para Plataformas Móveis – UNIDAVI  
-**Ano:** 2025
+- **Acadêmico:** Felipe Macedo e Guilherme Stein
+- **Orientação:** Prof. Sandro Alencar Fernandes
+- **Disciplina:** Desenvolvimento para Plataformas Móveis – UNIDAVI  
+- **Ano:** 2025
 
 ---
 

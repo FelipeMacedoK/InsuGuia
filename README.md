@@ -7,11 +7,6 @@ O projeto é fruto de uma proposta apresentada pelo **Dr. Itairan da Silva Terre
 
 ---
 
-## 🎯 Objetivo
-Desenvolver um **protótipo funcional** que sirva como registro de prescrição de insulina em ambiente hospitalar.
-
----
-
 ## ⚙️ Funcionalidades Implementadas
 - **Cadastro de paciente** (nome, idade, sexo, peso, altura, creatinina, local de internação)
 - **Registro de glicemia e dose de insulina**

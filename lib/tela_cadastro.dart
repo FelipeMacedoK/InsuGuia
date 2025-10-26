@@ -38,7 +38,7 @@ class _TelaCadastroState extends State<TelaCadastro> {
               const SizedBox(height: 8),
               DropdownButtonFormField(
                 decoration: const InputDecoration(labelText: 'Sexo'),
-                value: sexo,
+                initialValue: sexo,
                 items: ['Masculino', 'Feminino']
                     .map((s) => DropdownMenuItem(value: s, child: Text(s)))
                     .toList(),

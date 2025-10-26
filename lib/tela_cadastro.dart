@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'models/paciente.dart';
+import 'services/firestore_service.dart';
 
 class TelaCadastro extends StatefulWidget {
   const TelaCadastro({super.key});
@@ -9,6 +12,8 @@ class TelaCadastro extends StatefulWidget {
 
 class _TelaCadastroState extends State<TelaCadastro> {
   final _formKey = GlobalKey<FormState>();
+  final _firestoreService = FirestoreService();
+  bool _isLoading = false;
 
   String nome = '';
   String sexo = 'Masculino';
@@ -17,6 +22,7 @@ class _TelaCadastroState extends State<TelaCadastro> {
   double altura = 0;
   double creatinina = 0;
   String local = '';
+  String diagnostico = '';
 
   @override
   Widget build(BuildContext context) {
@@ -73,14 +79,62 @@ class _TelaCadastroState extends State<TelaCadastro> {
               Center(
                 child: ElevatedButton.icon(
                   icon: const Icon(Icons.save),
-                  label: const Text('Salvar Cadastro'),
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Paciente cadastrado com sucesso!')),
-                      );
-                    }
-                  },
+                  label: _isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(color: Colors.white),
+                        )
+                      : const Text('Salvar Cadastro'),
+                  onPressed: _isLoading
+                      ? null
+                      : () async {
+                          if (_formKey.currentState!.validate()) {
+                            setState(() => _isLoading = true);
+                            try {
+                              final userId = FirebaseAuth.instance.currentUser?.uid;
+                              if (userId == null) {
+                                throw Exception('Usuário não autenticado');
+                              }
+
+                              final novoPaciente = Paciente(
+                                id: '', // Será gerado pelo Firestore
+                                nome: nome,
+                                idade: idade,
+                                peso: peso,
+                                altura: altura,
+                                diagnostico: 'Creatinina: $creatinina mg/dL\nLocal: $local\nSexo: $sexo',
+                                dataCadastro: DateTime.now(),
+                                userId: userId,
+                              );
+
+                              await _firestoreService.addPaciente(novoPaciente);
+                              
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Paciente cadastrado com sucesso!'),
+                                    backgroundColor: Colors.green,
+                                  ),
+                                );
+                                Navigator.pop(context);
+                              }
+                            } catch (e) {
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Erro ao cadastrar paciente: $e'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                            } finally {
+                              if (mounted) {
+                                setState(() => _isLoading = false);
+                              }
+                            }
+                          }
+                        },
                 ),
               ),
             ],

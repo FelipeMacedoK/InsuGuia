@@ -6,6 +6,8 @@ import 'tela_cadastro.dart';
 import 'tela_registro_insulina.dart';
 import 'tela_historico.dart';
 import 'tela_login.dart';
+import 'models/paciente.dart';
+import 'services/firestore_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,7 +38,7 @@ class InsuGuiaApp extends StatelessWidget {
           }
           
           if (snapshot.hasData && snapshot.data != null) {
-            return const TelaPrincipal();
+            return TelaPrincipal();
           }
           
           return const TelaLogin();
@@ -48,7 +50,9 @@ class InsuGuiaApp extends StatelessWidget {
 }
 
 class TelaPrincipal extends StatelessWidget {
-  const TelaPrincipal({super.key});
+  TelaPrincipal({super.key});
+
+  final _firestoreService = FirestoreService();
 
   @override
   Widget build(BuildContext context) {
@@ -63,46 +67,126 @@ class TelaPrincipal extends StatelessWidget {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
+      body: Column(
+        children: [
+          const Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Text(
               'Aplicativo acadêmico para apoio à prescrição de insulina '
               'em pacientes hospitalares (cenário não crítico).',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 16),
             ),
-            const SizedBox(height: 30),
-            ElevatedButton.icon(
-              icon: const Icon(Icons.person_add),
-              label: const Text('Cadastro de Paciente'),
-              onPressed: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (_) => const TelaCadastro()));
+          ),
+          Expanded(
+            child: StreamBuilder<List<Paciente>>(
+              stream: _firestoreService.getPacientes(),
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Text('Erro: ${snapshot.error}'),
+                  );
+                }
+
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                final pacientes = snapshot.data ?? [];
+
+                if (pacientes.isEmpty) {
+                  return const Center(
+                    child: Text('Nenhum paciente cadastrado'),
+                  );
+                }
+
+                return ListView.builder(
+                  padding: const EdgeInsets.all(8),
+                  itemCount: pacientes.length,
+                  itemBuilder: (context, index) {
+                    final paciente = pacientes[index];
+                    return Card(
+                      child: ListTile(
+                        title: Text(paciente.nome),
+                        subtitle: Text(
+                          'Idade: ${paciente.idade} anos\n${paciente.diagnostico}',
+                        ),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.delete),
+                          onPressed: () async {
+                            final confirma = await showDialog<bool>(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: const Text('Confirmar exclusão'),
+                                content: const Text(
+                                  'Deseja realmente excluir este paciente?',
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.pop(context, false),
+                                    child: const Text('Cancelar'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context, true),
+                                    child: const Text('Excluir'),
+                                  ),
+                                ],
+                              ),
+                            );
+
+                            if (confirma == true) {
+                              await _firestoreService.deletePaciente(paciente.id);
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Paciente excluído com sucesso'),
+                                  ),
+                                );
+                              }
+                            }
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                );
               },
             ),
-            const SizedBox(height: 10),
-            ElevatedButton.icon(
-              icon: const Icon(Icons.medication),
-              label: const Text('Registrar Dose de Insulina'),
-              onPressed: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (_) => const TelaRegistroInsulina()));
-              },
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.person_add),
+                  label: const Text('Cadastro de Paciente'),
+                  onPressed: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => const TelaCadastro()));
+                  },
+                ),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.medication),
+                  label: const Text('Registrar Dose'),
+                  onPressed: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => TelaRegistroInsulina()));
+                  },
+                ),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.history),
+                  label: const Text('Histórico'),
+                  onPressed: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => TelaHistorico()));
+                  },
+                ),
+              ],
             ),
-            const SizedBox(height: 10),
-            ElevatedButton.icon(
-              icon: const Icon(Icons.history),
-              label: const Text('Histórico de Aplicações'),
-              onPressed: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (_) => const TelaHistorico()));
-              },
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

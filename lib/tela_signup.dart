@@ -32,25 +32,45 @@ class _TelaSignupState extends State<TelaSignup> {
 
       try {
         await FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: _emailController.text,
+          email: _emailController.text.trim(),
           password: _senhaController.text,
         );
         // O StreamBuilder em main.dart vai detectar a mudança e redirecionar
       } on FirebaseAuthException catch (e) {
-        setState(() {
-          _errorMessage = switch (e.code) {
-            'weak-password' => 'A senha é muito fraca.',
-            'email-already-in-use' => 'Este email já está em uso.',
-            'invalid-email' => 'Email inválido.',
-            _ => 'Erro ao criar conta: ${e.message}',
-          };
-        });
-      } finally {
-        if (mounted) {
-          setState(() {
-            _isLoading = false;
-          });
+        String mensagem;
+        switch (e.code) {
+          case 'weak-password':
+            mensagem = 'A senha é muito fraca. Use ao menos 6 caracteres.';
+            break;
+          case 'email-already-in-use':
+            mensagem = 'Este email já está em uso. Tente outro.';
+            break;
+          case 'invalid-email':
+            mensagem = 'Formato de email inválido.';
+            break;
+          case 'operation-not-allowed':
+            mensagem = 'Registro por email/senha não está habilitado.';
+            break;
+          case 'invalid-credential':
+            mensagem = 'Credencial inválida. Verifique e tente novamente.';
+            break;
+          case 'too-many-requests':
+            mensagem = 'Muitas tentativas. Aguarde e tente novamente.';
+            break;
+          default:
+            mensagem = 'Erro ao criar conta. Verifique seus dados e tente novamente.';
+            debugPrint('FirebaseAuthException (unmapped) during signup: ${e.code} - ${e.message}');
         }
+        debugPrint('FirebaseAuthException during signup: ${e.code} - ${e.message}');
+        setState(() => _errorMessage = mensagem);
+      } on FirebaseException catch (e) {
+        debugPrint('FirebaseException during signup: ${e.code} - ${e.message}');
+        setState(() => _errorMessage = 'Erro ao conectar com o serviço de autenticação.');
+      } catch (e, st) {
+        debugPrint('Unexpected error during signup: $e\n$st');
+        setState(() => _errorMessage = 'Ocorreu um erro inesperado.');
+      } finally {
+        if (mounted) setState(() => _isLoading = false);
       }
     }
   }

@@ -120,10 +120,26 @@ class _TelaCadastroState extends State<TelaCadastro> {
                                 Navigator.pop(context);
                               }
                             } catch (e) {
+                              // Tratar erros do Firebase especificamente
+                              String mensagem = 'Erro ao cadastrar paciente.';
+                              if (e is FirebaseException) {
+                                debugPrint('FirebaseException addPaciente: ${e.code} - ${e.message}');
+                                if (e.code == 'permission-denied') {
+                                  mensagem = 'Sem permissão para cadastrar. Verifique regras do Firestore.';
+                                } else {
+                                  // Não expor a mensagem do SDK (em inglês) ao usuário; logar para debugging
+                                  mensagem = 'Erro no serviço ao cadastrar paciente.';
+                                  debugPrint('FirebaseException addPaciente (detail): ${e.code} - ${e.message}');
+                                }
+                              } else {
+                                debugPrint('Exception addPaciente: $e');
+                                mensagem = 'Erro ao cadastrar paciente: $e';
+                              }
+
                               if (mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text('Erro ao cadastrar paciente: $e'),
+                                    content: Text(mensagem),
                                     backgroundColor: Colors.red,
                                   ),
                                 );

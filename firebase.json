@@ -1,1 +1,27 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"insuguia","appId":"1:242718631111:android:d20a1b033a61b94227cae2","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"insuguia","configurations":{"android":"1:242718631111:android:d20a1b033a61b94227cae2","ios":"1:242718631111:ios:8c8bd9bc90b07a7327cae2","web":"1:242718631111:web:b7304c41b2eba50227cae2","windows":"1:242718631111:web:a142d8910b43423727cae2"}}}}}}
+{
+	"flutter": {
+		"platforms": {
+			"android": {
+				"default": {
+					"projectId": "insuguia",
+					"appId": "1:242718631111:android:d20a1b033a61b94227cae2",
+					"fileOutput": "android/app/google-services.json"
+				}
+			},
+			"dart": {
+				"lib/firebase_options.dart": {
+					"projectId": "insuguia",
+					"configurations": {
+						"android": "1:242718631111:android:d20a1b033a61b94227cae2",
+						"ios": "1:242718631111:ios:8c8bd9bc90b07a7327cae2",
+						"web": "1:242718631111:web:b7304c41b2eba50227cae2",
+						"windows": "1:242718631111:web:a142d8910b43423727cae2"
+					}
+				}
+			}
+		}
+	},
+	"firestore": {
+		"rules": "firestore.rules"
+	}
+}

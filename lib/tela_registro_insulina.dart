@@ -5,7 +5,7 @@ import 'models/registro_insulina.dart';
 import 'services/firestore_service.dart';
 
 class TelaRegistroInsulina extends StatefulWidget {
-  TelaRegistroInsulina({super.key});
+  const TelaRegistroInsulina({super.key});
 
   @override
   State<TelaRegistroInsulina> createState() => _TelaRegistroInsulinaState();
@@ -35,7 +35,20 @@ class _TelaRegistroInsulinaState extends State<TelaRegistroInsulina> {
                 stream: _firestoreService.getPacientes(),
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
-                    return Text('Erro: ${snapshot.error}');
+                    // Mensagem amigável e log para debug
+                    final err = snapshot.error;
+                    String mensagem = 'Erro ao carregar pacientes.';
+                    if (err is FirebaseException) {
+                      debugPrint('FirebaseException getPacientes stream: ${err.code} - ${err.message}');
+                      if (err.code == 'permission-denied') {
+                        mensagem = 'Sem permissão para acessar pacientes. Verifique as regras do Firestore.';
+                      } else {
+                        mensagem = 'Erro no serviço: ${err.message}';
+                      }
+                    } else {
+                      debugPrint('Stream error getPacientes: $err');
+                    }
+                    return Text(mensagem, style: const TextStyle(color: Colors.red));
                   }
 
                   if (!snapshot.hasData) {
@@ -55,7 +68,7 @@ class _TelaRegistroInsulinaState extends State<TelaRegistroInsulina> {
                       labelText: 'Selecione o Paciente',
                       border: OutlineInputBorder(),
                     ),
-                    value: _pacienteSelecionado?.id,
+                    initialValue: _pacienteSelecionado?.id,
                     items: pacientes.map((paciente) {
                       return DropdownMenuItem(
                         value: paciente.id,
@@ -129,7 +142,7 @@ class _TelaRegistroInsulinaState extends State<TelaRegistroInsulina> {
                   labelText: 'Tipo de Insulina',
                   border: OutlineInputBorder(),
                 ),
-                value: tipoInsulina,
+                initialValue: tipoInsulina,
                 items: const [
                   DropdownMenuItem(value: 'Regular', child: Text('Regular')),
                   DropdownMenuItem(value: 'NPH', child: Text('NPH')),
@@ -190,11 +203,24 @@ class _TelaRegistroInsulinaState extends State<TelaRegistroInsulina> {
                                 Navigator.pop(context);
                               }
                             } catch (e) {
+                              String mensagem = 'Erro ao salvar registro.';
+                              if (e is FirebaseException) {
+                                debugPrint('FirebaseException addRegistroInsulina: ${e.code} - ${e.message}');
+                                if (e.code == 'permission-denied') {
+                                  mensagem = 'Sem permissão para salvar registro. Verifique regras do Firestore.';
+                                } else {
+                                  mensagem = 'Erro no serviço ao salvar registro.';
+                                  debugPrint('FirebaseException addRegistroInsulina (detail): ${e.code} - ${e.message}');
+                                }
+                              } else {
+                                debugPrint('Exception addRegistroInsulina: $e');
+                                mensagem = 'Erro ao salvar registro: $e';
+                              }
+
                               if (mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content:
-                                        Text('Erro ao salvar registro: $e'),
+                                    content: Text(mensagem),
                                     backgroundColor: Colors.red,
                                   ),
                                 );

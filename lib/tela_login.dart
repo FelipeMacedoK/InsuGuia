@@ -25,28 +25,52 @@ class _TelaLoginState extends State<TelaLogin> {
 
       try {
         await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: _emailController.text,
+          email: _emailController.text.trim(),
           password: _senhaController.text,
         );
-        if (mounted) {
-          // Não precisamos navegar manualmente, o StreamBuilder em main.dart
-          // vai detectar a mudança de estado e mostrar a TelaPrincipal
-        }
+        // StreamBuilder em main.dart detecta a mudança de estado e redireciona
       } on FirebaseAuthException catch (e) {
-        setState(() {
-          _errorMessage = switch (e.code) {
-            'user-not-found' => 'Usuário não encontrado.',
-            'wrong-password' => 'Senha incorreta.',
-            'invalid-email' => 'Email inválido.',
-            _ => 'Erro ao fazer login: ${e.message}',
-          };
-        });
-      } finally {
-        if (mounted) {
-          setState(() {
-            _isLoading = false;
-          });
+        // Mapear códigos conhecidos para mensagens amigáveis em português
+        String mensagem;
+        switch (e.code) {
+          case 'user-not-found':
+            mensagem = 'Usuário não encontrado. Verifique o email.';
+            break;
+          case 'wrong-password':
+            mensagem = 'Senha incorreta. Tente novamente.';
+            break;
+          case 'invalid-email':
+            mensagem = 'Formato de email inválido.';
+            break;
+          case 'user-disabled':
+            mensagem = 'Conta desativada. Contate o administrador.';
+            break;
+          case 'too-many-requests':
+            mensagem = 'Muitas tentativas. Aguarde alguns instantes.';
+            break;
+          case 'operation-not-allowed':
+            mensagem = 'Método de autenticação não permitido.';
+            break;
+          case 'invalid-credential':
+            mensagem = 'Credencial inválida. Verifique e tente novamente.';
+            break;
+          default:
+            // Não expor mensagem do SDK (normalmente em inglês) ao usuário;
+            // mostrar mensagem genérica e logar o detalhe para depuração.
+            mensagem = 'Erro ao fazer login. Verifique suas credenciais e tente novamente.';
+            debugPrint('FirebaseAuthException (unmapped) during signIn: ${e.code} - ${e.message}');
         }
+        debugPrint('FirebaseAuthException during signIn: ${e.code} - ${e.message}');
+        setState(() => _errorMessage = mensagem);
+      } on FirebaseException catch (e) {
+        // Erros mais genéricos do SDK
+        debugPrint('FirebaseException during signIn: ${e.code} - ${e.message}');
+        setState(() => _errorMessage = 'Erro ao conectar com o serviço de autenticação.');
+      } catch (e, st) {
+        debugPrint('Unexpected error during signIn: $e\n$st');
+        setState(() => _errorMessage = 'Ocorreu um erro inesperado.');
+      } finally {
+        if (mounted) setState(() => _isLoading = false);
       }
     }
   }

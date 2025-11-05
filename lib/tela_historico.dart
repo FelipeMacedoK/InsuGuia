@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'models/registro_insulina.dart';
 import 'services/firestore_service.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 class TelaHistorico extends StatelessWidget {
   TelaHistorico({super.key});
@@ -17,8 +18,21 @@ class TelaHistorico extends StatelessWidget {
         stream: _firestoreService.getRegistrosInsulina(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
+            final err = snapshot.error;
+            String mensagem = 'Erro ao carregar registros.';
+            if (err is FirebaseException) {
+              debugPrint('FirebaseException getRegistrosInsulina: ${err.code} - ${err.message}');
+              if (err.code == 'permission-denied') {
+                mensagem = 'Sem permissão para acessar registros. Verifique regras do Firestore.';
+              } else {
+                mensagem = 'Erro no serviço ao carregar registros.';
+                debugPrint('FirebaseException getRegistrosInsulina (detail): ${err.code} - ${err.message}');
+              }
+            } else {
+              debugPrint('Stream error getRegistrosInsulina: $err');
+            }
             return Center(
-              child: Text('Erro ao carregar registros: ${snapshot.error}'),
+              child: Text(mensagem),
             );
           }
 
@@ -74,14 +88,37 @@ class TelaHistorico extends StatelessWidget {
                       );
 
                       if (confirma == true) {
-                        await _firestoreService
-                            .deleteRegistroInsulina(registro.id);
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Registro excluído com sucesso'),
-                            ),
-                          );
+                        try {
+                          await _firestoreService.deleteRegistroInsulina(registro.id);
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Registro excluído com sucesso'),
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          String mensagem = 'Erro ao excluir registro.';
+                          if (e is FirebaseException) {
+                            debugPrint('FirebaseException deleteRegistroInsulina: ${e.code} - ${e.message}');
+                            if (e.code == 'permission-denied') {
+                              mensagem = 'Sem permissão para excluir registro. Verifique regras do Firestore.';
+                            } else {
+                              mensagem = 'Erro no serviço: ${e.message}';
+                            }
+                          } else {
+                            debugPrint('Exception deleteRegistroInsulina: $e');
+                            mensagem = 'Erro ao excluir registro: $e';
+                          }
+
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(mensagem),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
                         }
                       }
                     },

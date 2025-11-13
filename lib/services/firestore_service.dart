@@ -26,10 +26,9 @@ class FirestoreService {
     final userId = _auth.currentUser?.uid;
     if (userId == null) throw Exception('Usuário não autenticado');
 
-    return _pacientes
-        .where('userId', isEqualTo: userId)
-        .snapshots()
-        .map((snapshot) {
+    return _pacientes.where('userId', isEqualTo: userId).snapshots().map((
+      snapshot,
+    ) {
       return snapshot.docs.map((doc) {
         return Paciente.fromMap(doc.id, doc.data());
       }).toList();
@@ -84,15 +83,19 @@ class FirestoreService {
     final userId = _auth.currentUser?.uid;
     if (userId == null) throw Exception('Usuário não autenticado');
 
+    // Avoid requiring a composite index by ordering on the client side.
+    // We still filter by userId in the query to limit documents read.
     return _registrosInsulina
         .where('userId', isEqualTo: userId)
-        .orderBy('dataRegistro', descending: true)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) {
-        return RegistroInsulina.fromMap(doc.id, doc.data());
-      }).toList();
-    });
+          final list = snapshot.docs
+              .map((doc) => RegistroInsulina.fromMap(doc.id, doc.data()))
+              .toList();
+          // sort by dataRegistro descending (newest first)
+          list.sort((a, b) => b.dataRegistro.compareTo(a.dataRegistro));
+          return list;
+        });
   }
 
   // Obter registros de insulina de um paciente específico
@@ -100,16 +103,18 @@ class FirestoreService {
     final userId = _auth.currentUser?.uid;
     if (userId == null) throw Exception('Usuário não autenticado');
 
+    // Avoid composite index requirement by sorting in client after fetching
     return _registrosInsulina
         .where('userId', isEqualTo: userId)
         .where('pacienteId', isEqualTo: pacienteId)
-        .orderBy('dataRegistro', descending: true)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) {
-        return RegistroInsulina.fromMap(doc.id, doc.data());
-      }).toList();
-    });
+          final list = snapshot.docs
+              .map((doc) => RegistroInsulina.fromMap(doc.id, doc.data()))
+              .toList();
+          list.sort((a, b) => b.dataRegistro.compareTo(a.dataRegistro));
+          return list;
+        });
   }
 
   // Excluir um registro de insulina

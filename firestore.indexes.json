@@ -1,0 +1,13 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "registros_insulina",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "dataRegistro", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

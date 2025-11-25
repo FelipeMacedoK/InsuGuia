@@ -5,6 +5,10 @@ import 'firebase_options.dart';
 import 'tela_cadastro.dart';
 import 'tela_registro_insulina.dart';
 import 'tela_historico.dart';
+import 'tela_prescricao_avancada.dart';
+import 'tela_historico_prescricoes.dart';
+import 'tela_monitorizacao_diaria.dart';
+import 'tela_alta_paciente.dart';
 import 'tela_login.dart';
 import 'models/paciente.dart';
 import 'services/firestore_service.dart';
@@ -184,6 +188,52 @@ class TelaPrincipal extends StatelessWidget {
                   },
                 ),
               ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.note_add),
+                  label: const Text('Prescrição'),
+                  onPressed: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => const TelaPrescricaoAvancada()));
+                  },
+                ),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.description),
+                  label: const Text('Hist. Prescrição'),
+                  onPressed: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => const TelaHistoricoPrescricoes()));
+                  },
+                ),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.trending_up),
+                  label: const Text('Monitorização'),
+                  onPressed: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => const TelaMonitorizacaoDiaria()));
+                  },
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: ElevatedButton.icon(
+              icon: const Icon(Icons.exit_to_app),
+              label: const Text('Alta do Paciente'),
+              onPressed: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => const TelaAltaPaciente()));
+              },
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
             ),
           ),
         ],

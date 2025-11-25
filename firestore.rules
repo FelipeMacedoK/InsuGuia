@@ -20,6 +20,13 @@ service cloud.firestore {
                                   && resource.data.userId == request.auth.uid;
     }
 
-    // Adicione outras coleções aqui conforme necessário.
+    // Prescrições: isoladas por usuário (userId)
+    match /prescricoes/{docId} {
+      allow create: if request.auth != null
+                    && request.resource.data.userId == request.auth.uid;
+
+      allow read, update, delete: if request.auth != null
+                                  && resource.data.userId == request.auth.uid;
+    }
   }
 }

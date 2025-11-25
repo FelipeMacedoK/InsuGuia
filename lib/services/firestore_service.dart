@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/paciente.dart';
 import '../models/registro_insulina.dart';
+import '../models/prescricao.dart';
 
 class FirestoreService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -123,6 +124,85 @@ class FirestoreService {
       await _registrosInsulina.doc(id).delete();
     } catch (e) {
       throw Exception('Erro ao excluir registro: $e');
+    }
+  }
+
+  // Referência à coleção de prescrições
+  CollectionReference<Map<String, dynamic>> get _prescricoes =>
+      _firestore.collection('prescricoes');
+
+  // Adicionar uma nova prescrição
+  Future<String> addPrescricao(Prescricao prescricao) async {
+    try {
+      final docRef = await _prescricoes.add(prescricao.toMap());
+      return docRef.id;
+    } catch (e) {
+      throw Exception('Erro ao adicionar prescrição: $e');
+    }
+  }
+
+  // Obter todas as prescrições do usuário atual
+  Stream<List<Prescricao>> getPrescricoes() {
+    final userId = _auth.currentUser?.uid;
+    if (userId == null) throw Exception('Usuário não autenticado');
+
+    return _prescricoes
+        .where('userId', isEqualTo: userId)
+        .snapshots()
+        .map((snapshot) {
+          final list = snapshot.docs
+              .map((doc) => Prescricao.fromMap(doc.id, doc.data()))
+              .toList();
+          // sort by dataPrescricao descending (newest first)
+          list.sort((a, b) => b.dataPrescricao.compareTo(a.dataPrescricao));
+          return list;
+        });
+  }
+
+  // Obter prescrições de um paciente específico
+  Stream<List<Prescricao>> getPrescricoesPorPaciente(String pacienteId) {
+    final userId = _auth.currentUser?.uid;
+    if (userId == null) throw Exception('Usuário não autenticado');
+
+    return _prescricoes
+        .where('userId', isEqualTo: userId)
+        .where('pacienteId', isEqualTo: pacienteId)
+        .snapshots()
+        .map((snapshot) {
+          final list = snapshot.docs
+              .map((doc) => Prescricao.fromMap(doc.id, doc.data()))
+              .toList();
+          list.sort((a, b) => b.dataPrescricao.compareTo(a.dataPrescricao));
+          return list;
+        });
+  }
+
+  // Atualizar uma prescrição existente
+  Future<void> updatePrescricao(String id, Map<String, dynamic> data) async {
+    try {
+      await _prescricoes.doc(id).update(data);
+    } catch (e) {
+      throw Exception('Erro ao atualizar prescrição: $e');
+    }
+  }
+
+  // Excluir uma prescrição
+  Future<void> deletePrescricao(String id) async {
+    try {
+      await _prescricoes.doc(id).delete();
+    } catch (e) {
+      throw Exception('Erro ao excluir prescrição: $e');
+    }
+  }
+
+  // Buscar uma prescrição específica
+  Future<Prescricao?> getPrescricao(String id) async {
+    try {
+      final doc = await _prescricoes.doc(id).get();
+      if (!doc.exists) return null;
+      return Prescricao.fromMap(doc.id, doc.data()!);
+    } catch (e) {
+      throw Exception('Erro ao buscar prescrição: $e');
     }
   }
 }
